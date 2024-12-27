@@ -65,11 +65,14 @@ def sample_model(model, n_samples_per_class, classes2sample, ddim_steps, ddim_et
                         {ensemble_comps[_].cond_stage_key: torch.tensor(n_samples_per_class*[1000]).to(model.device)})
                     all_ucs.append(uc)
                  
-            all_samples_row1 =[]
-            all_samples_row2 =[]
-            all_samples_row3 =[]
-            all_samples_row4 =[]
-            all_samples_row5 =[]
+            # all_samples_row1 =[]
+            # all_samples_row2 =[]
+            # all_samples_row3 =[]
+            # all_samples_row4 =[]
+            # all_samples_row5 =[]
+
+            all_samples = []
+            all_labels = []
             for class_label in classes2sample:
                 seed_everything(42)
                 print(f"rendering {n_samples_per_class} examples of class '{class_label}' in"\
@@ -109,36 +112,60 @@ def sample_model(model, n_samples_per_class, classes2sample, ddim_steps, ddim_et
                 #x_samples_ddim = model.decode_first_stage(samples_ddim[:,:,:,:])
                 x_samples_ddim = torch.clamp((x_samples_ddim+1.0)/2.0, 
                                              min=0.0, max=1.0)
-                all_samples_row1.append(x_samples_ddim[0,:,:,:])
-                all_samples_row2.append(x_samples_ddim[1,:,:,:])
-                all_samples_row3.append(x_samples_ddim[2,:,:,:])
-                all_samples_row4.append(x_samples_ddim[3,:,:,:])
-                all_samples_row5.append(x_samples_ddim[4,:,:,:])
                 
-            #import pdb; pdb.set_trace()
-            grid_row1 = torch.stack(all_samples_row1)
-            grid_row2 = torch.stack(all_samples_row2)
-            grid_row3 = torch.stack(all_samples_row3)
-            grid_row4 = torch.stack(all_samples_row4)
-            grid_row5 = torch.stack(all_samples_row5)
-            grid = torch.stack([grid_row1, grid_row2, grid_row3, grid_row4, grid_row5], 0)
-            #original_shape = grid.shape
-            #tensor_2d = tensor.view(-1, original_shape[1], original_shape[3], original_shape[4])
-            #all_samples = 
-            #grid = rearrange(all_samples, 'n b c h w -> (n b) c h w').reshape(-1,5,3,256,256)
-            #grid = itorch.stack((a,b), dim=2).view(2,4)
-            #grid0 = torch.stack(all_samples, 0)
-            grid = rearrange(grid, 'n b c h w -> (n b) c h w')
-            grid = make_grid(grid, nrow=len(classes2sample))
+            #    ============= STORE ALL SAMPLES =================
+                all_samples.append(x_samples_ddim)
+                all_labels.append(class_label)
 
-            # to image
-            grid = 255. * rearrange(grid, 'c h w -> h w c').cpu().numpy()
-            grid_class_img = Image.fromarray(grid.astype(np.uint8))
-            file_name = os.path.join(path,'images5_p2.png')
-            #combined_image.paste(grid_class_img, (0, 0))
-            #combined_image.save(file_name)
-            grid_class_img.save(file_name)
-            print(file_name)
+
+
+            all_samples = torch.stack(all_samples, 0)
+            print(all_samples.shape)
+
+            # save all samples
+            with open(os.path.join(path, f'all_samples_{unc_branch}.pkl'), 'wb') as f:
+                pickle.dump(all_samples, f)
+
+            with open(os.path.join(path, f'all_labels_{unc_branch}.pkl'), 'wb') as f:
+                pickle.dump(all_labels, f)
+            #     ================================================
+            
+
+                
+            #     ============= PLOTTING =========================  
+                
+            #     all_samples_row1.append(x_samples_ddim[0,:,:,:])
+            #     all_samples_row2.append(x_samples_ddim[1,:,:,:])
+            #     all_samples_row3.append(x_samples_ddim[2,:,:,:])
+            #     all_samples_row4.append(x_samples_ddim[3,:,:,:])
+            #     all_samples_row5.append(x_samples_ddim[4,:,:,:])
+                
+            # #import pdb; pdb.set_trace()
+            # grid_row1 = torch.stack(all_samples_row1)
+            # grid_row2 = torch.stack(all_samples_row2)
+            # grid_row3 = torch.stack(all_samples_row3)
+            # grid_row4 = torch.stack(all_samples_row4)
+            # grid_row5 = torch.stack(all_samples_row5)
+            # grid = torch.stack([grid_row1, grid_row2, grid_row3, grid_row4, grid_row5], 0)
+            # #original_shape = grid.shape
+            # #tensor_2d = tensor.view(-1, original_shape[1], original_shape[3], original_shape[4])
+            # #all_samples = 
+            # #grid = rearrange(all_samples, 'n b c h w -> (n b) c h w').reshape(-1,5,3,256,256)
+            # #grid = itorch.stack((a,b), dim=2).view(2,4)
+            # #grid0 = torch.stack(all_samples, 0)
+            # grid = rearrange(grid, 'n b c h w -> (n b) c h w')
+            # grid = make_grid(grid, nrow=len(classes2sample))
+
+            # # to image
+            # grid = 255. * rearrange(grid, 'c h w -> h w c').cpu().numpy()
+            # grid_class_img = Image.fromarray(grid.astype(np.uint8))
+            # file_name = os.path.join(path,'images5_p2.png')
+            # #combined_image.paste(grid_class_img, (0, 0))
+            # #combined_image.save(file_name)
+            # grid_class_img.save(file_name)
+            # print(file_name)
+
+            # ========================================
 
 
 if __name__ == '__main__':
@@ -154,7 +181,7 @@ if __name__ == '__main__':
     parser.add_argument('--ddim_steps', type=int, help='number of steps to take in ddim', 
         default=200)
     parser.add_argument('--unc_branch', type=int, help='when to split for generative proccess', 
-        default=199)
+        default=100)
     parser.add_argument('--dataset', default = 'binned_classes', type=str, help='binned or masked classes')
     args = parser.parse_args()
     seed_everything(54)
@@ -167,6 +194,7 @@ if __name__ == '__main__':
     comp_idx = random.randint(0, (ensemble_size-1))
     
     subsets, human_synset, idx2synset, synset2idx = create_synset_dicts(args.dataset)
+    # print(len(subsets[1]), len(subsets[10]), len(subsets[100]), len(subsets[1300]))
     # missing synset 'n02012849'
     # double cranes n02012849, n03126707
     if args.dataset == 'binned_classes':
@@ -181,14 +209,16 @@ if __name__ == '__main__':
         #classes_1300 = [synset2idx[k] for k in subsets[1300]]
         # Note subset
         # Uncertain Classes
-        classes_1 = [392, 708, 729, 854]
-        classes_10 = []
-        classes_100 = []
-        classes_1300 = []
-        # Certain Classes
-        #classes_1 = []
-        #classes_1300 = [25, 447, 991, 992]
-        classes2sample = classes_1+classes_10+classes_100+classes_1300
+        # # classes_1 = [392, 708, 729, 854]
+        # classes_10 = []
+        # classes_100 = []
+        # classes_1300 = []
+        # # Certain Classes
+        # classes_1 = []
+        # classes_1300 = [25, 447, 991, 992]
+        # classes2sample = classes_1+classes_10+classes_100+classes_1300
+        classes2sample = [synset2idx[k] for k in subsets[1]]+[synset2idx[k] for k in subsets[10]]+\
+            [synset2idx[k] for k in subsets[100]]+[synset2idx[k] for k in subsets[1300]]
     elif args.dataset=='masked_classes':
         synsets = [item for ls in subsets.values() for item in ls]
         synsets = list(set(synsets))
@@ -213,13 +243,14 @@ if __name__ == '__main__':
     ddim_steps = args.ddim_steps
     ddim_eta = args.ddim_eta
     scale = args.scale
-    #n_samples_per_class = 5 
+    # n_samples_per_class = 5 
     n_samples_per_class = 1 
     
     pic_path = args.path
     pic_path = os.path.join(pic_path, f'certain_vs_uncertain')
     os.makedirs(pic_path, exist_ok=True)
     ## sample examples
+    print("ENSEMBLE SIZE: ", ensemble_size)
     sample_model(model, n_samples_per_class, classes2sample, ddim_steps, ddim_eta, scale,
         ensemble_size, pic_path, idx2synset, subsets, args.unc_branch, sampler, comp_idx, 
         ensemble_comps)

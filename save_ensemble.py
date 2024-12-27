@@ -39,7 +39,8 @@ def get_model(path):
     return model
 
 def load_ensemble(path, numb_comps):
-    ensemble_model_config = OmegaConf.load('/home/nwaftp23/latent-diffusion/configs/latent-diffusion/cin_ensemble.yaml')
+    # ensemble_model_config = OmegaConf.load('/home/nwaftp23/latent-diffusion/configs/latent-diffusion/cin_ensemble.yaml')
+    ensemble_model_config = OmegaConf.load('/ivi/zfs/s0/original_homes/mjazbec/epistem-diff/DECU/configs/latent-diffusion/cin_ensemble.yaml')
     ensemble_model_config.model.params.unet_config.params['ensemble_size'] = numb_comps
     ensemble_model_config.model.params.cond_stage_config.params['ensemble_size'] = numb_comps
     ensemble_model = instantiate_from_config(ensemble_model_config.model)
@@ -56,7 +57,8 @@ def save_ensemble(path, ensemble_name, numb_comps):
     model_dirs.sort()
     model_dirs = model_dirs[:numb_comps]
     #model_dirs = model_dirs[:1]
-    ensemble_model_config = OmegaConf.load('/home/nwaftp23/latent-diffusion/configs/latent-diffusion/cin_ensemble.yaml') 
+    # ensemble_model_config = OmegaConf.load('/home/nwaftp23/latent-diffusion/configs/latent-diffusion/cin_ensemble.yaml') 
+    ensemble_model_config = OmegaConf.load('/ivi/zfs/s0/original_homes/mjazbec/epistem-diff/DECU/configs/latent-diffusion/cin_ensemble.yaml') 
     ensemble_model_config.model.params.unet_config.params['ensemble_size'] = numb_comps
     ensemble_model_config.model.params.cond_stage_config.params['ensemble_size'] = numb_comps
     ensemble_model = instantiate_from_config(ensemble_model_config.model)
