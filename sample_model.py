@@ -65,11 +65,11 @@ def sample_model(model, n_samples_per_class, classes2sample, ddim_steps, ddim_et
                         {ensemble_comps[_].cond_stage_key: torch.tensor(n_samples_per_class*[1000]).to(model.device)})
                     all_ucs.append(uc)
                  
-            # all_samples_row1 =[]
-            # all_samples_row2 =[]
-            # all_samples_row3 =[]
-            # all_samples_row4 =[]
-            # all_samples_row5 =[]
+            all_samples_row1 =[]
+            all_samples_row2 =[]
+            all_samples_row3 =[]
+            all_samples_row4 =[]
+            all_samples_row5 =[]
 
             all_samples = []
             all_labels = []
@@ -113,7 +113,7 @@ def sample_model(model, n_samples_per_class, classes2sample, ddim_steps, ddim_et
                 x_samples_ddim = torch.clamp((x_samples_ddim+1.0)/2.0, 
                                              min=0.0, max=1.0)
                 
-            #    ============= STORE ALL SAMPLES =================
+            #   ============= STORE ALL SAMPLES =================
                 all_samples.append(x_samples_ddim)
                 all_labels.append(class_label)
 
@@ -132,7 +132,7 @@ def sample_model(model, n_samples_per_class, classes2sample, ddim_steps, ddim_et
             
 
                 
-            #     ============= PLOTTING =========================  
+            # #     ============= PLOTTING =========================  
                 
             #     all_samples_row1.append(x_samples_ddim[0,:,:,:])
             #     all_samples_row2.append(x_samples_ddim[1,:,:,:])
@@ -219,6 +219,8 @@ if __name__ == '__main__':
         # classes2sample = classes_1+classes_10+classes_100+classes_1300
         classes2sample = [synset2idx[k] for k in subsets[1]]+[synset2idx[k] for k in subsets[10]]+\
             [synset2idx[k] for k in subsets[100]]+[synset2idx[k] for k in subsets[1300]]
+        # classes2sample = [991]
+    
     elif args.dataset=='masked_classes':
         synsets = [item for ls in subsets.values() for item in ls]
         synsets = list(set(synsets))
@@ -243,7 +245,7 @@ if __name__ == '__main__':
     ddim_steps = args.ddim_steps
     ddim_eta = args.ddim_eta
     scale = args.scale
-    # n_samples_per_class = 5 
+    # n_samples_per_class = 100
     n_samples_per_class = 1 
     
     pic_path = args.path
