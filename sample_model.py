@@ -73,8 +73,8 @@ def sample_model(model, n_samples_per_class, classes2sample, ddim_steps, ddim_et
 
             all_samples = []
             all_labels = []
-            for class_label in classes2sample:
-                seed_everything(42)
+            for i, class_label in enumerate(classes2sample):
+                seed_everything(42 + i)
                 print(f"rendering {n_samples_per_class} examples of class '{class_label}' in"\
                     f" {ddim_steps} steps and using s={scale:.2f}.")
                 xc = torch.tensor(n_samples_per_class*[class_label])
@@ -113,20 +113,32 @@ def sample_model(model, n_samples_per_class, classes2sample, ddim_steps, ddim_et
                 x_samples_ddim = torch.clamp((x_samples_ddim+1.0)/2.0, 
                                              min=0.0, max=1.0)
                 
+                
             #   ============= STORE ALL SAMPLES =================
+                if n_samples_per_class > 1:
+                    x_samples_ddim = x_samples_ddim.reshape(n_samples_per_class, ensemble_size, 3, 256, 256)
                 all_samples.append(x_samples_ddim)
                 all_labels.append(class_label)
 
 
-
             all_samples = torch.stack(all_samples, 0)
+
+            if n_samples_per_class > 1:
+                assert all_samples.shape[0] == 1
+                all_samples = all_samples.squeeze(0)
             print(all_samples.shape)
 
-            # save all samples
-            with open(os.path.join(path, f'all_samples_{unc_branch}.pkl'), 'wb') as f:
+
+            # with open(os.path.join(path, f'all_samples_{unc_branch}.pkl'), 'wb') as f:
+            #     pickle.dump(all_samples, f)
+
+            # with open(os.path.join(path, f'all_labels_{unc_branch}.pkl'), 'wb') as f:
+            #     pickle.dump(all_labels, f)
+
+            with open(os.path.join(path, f'all_samples_{unc_branch}_854.pkl'), 'wb') as f:
                 pickle.dump(all_samples, f)
 
-            with open(os.path.join(path, f'all_labels_{unc_branch}.pkl'), 'wb') as f:
+            with open(os.path.join(path, f'all_labels_{unc_branch}_854.pkl'), 'wb') as f:
                 pickle.dump(all_labels, f)
             #     ================================================
             
@@ -181,7 +193,7 @@ if __name__ == '__main__':
     parser.add_argument('--ddim_steps', type=int, help='number of steps to take in ddim', 
         default=200)
     parser.add_argument('--unc_branch', type=int, help='when to split for generative proccess', 
-        default=100)
+        default=1)
     parser.add_argument('--dataset', default = 'binned_classes', type=str, help='binned or masked classes')
     args = parser.parse_args()
     seed_everything(54)
@@ -217,9 +229,11 @@ if __name__ == '__main__':
         # classes_1 = []
         # classes_1300 = [25, 447, 991, 992]
         # classes2sample = classes_1+classes_10+classes_100+classes_1300
-        classes2sample = [synset2idx[k] for k in subsets[1]]+[synset2idx[k] for k in subsets[10]]+\
-            [synset2idx[k] for k in subsets[100]]+[synset2idx[k] for k in subsets[1300]]
-        # classes2sample = [991]
+        # classes2sample = [synset2idx[k] for k in subsets[1]]+[synset2idx[k] for k in subsets[10]]+\
+        #     [synset2idx[k] for k in subsets[100]]+[synset2idx[k] for k in subsets[1300]]
+        # classes2sample = [991] * 50
+        # classes2sample = [25, 447, 991, 992]
+        classes2sample = [854] * 50
     
     elif args.dataset=='masked_classes':
         synsets = [item for ls in subsets.values() for item in ls]
@@ -245,7 +259,7 @@ if __name__ == '__main__':
     ddim_steps = args.ddim_steps
     ddim_eta = args.ddim_eta
     scale = args.scale
-    # n_samples_per_class = 100
+    # n_samples_per_class = 60
     n_samples_per_class = 1 
     
     pic_path = args.path
