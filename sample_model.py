@@ -135,10 +135,10 @@ def sample_model(model, n_samples_per_class, classes2sample, ddim_steps, ddim_et
             # with open(os.path.join(path, f'all_labels_{unc_branch}.pkl'), 'wb') as f:
             #     pickle.dump(all_labels, f)
 
-            with open(os.path.join(path, f'all_samples_{unc_branch}_854.pkl'), 'wb') as f:
+            with open(os.path.join(path, f'all_samples_{unc_branch}_22.pkl'), 'wb') as f:
                 pickle.dump(all_samples, f)
 
-            with open(os.path.join(path, f'all_labels_{unc_branch}_854.pkl'), 'wb') as f:
+            with open(os.path.join(path, f'all_labels_{unc_branch}_22.pkl'), 'wb') as f:
                 pickle.dump(all_labels, f)
             #     ================================================
             
@@ -215,10 +215,10 @@ if __name__ == '__main__':
         syn100_human = {k: human_synset[k] for k in subsets[100]}
         syn10_human = {k: human_synset[k] for k in subsets[10]}
         # NOTE all classes
-        #classes_1 = [synset2idx[k] for k in subsets[1]]
-        #classes_10 = [synset2idx[k] for k in subsets[10]]
-        #classes_100 = [synset2idx[k] for k in subsets[100]]
-        #classes_1300 = [synset2idx[k] for k in subsets[1300]]
+        # classes_1 = [synset2idx[k] for k in subsets[1]]
+        # classes_10 = [synset2idx[k] for k in subsets[10]]
+        # classes_100 = [synset2idx[k] for k in subsets[100]]
+        # classes_1300 = [synset2idx[k] for k in subsets[1300]]
         # Note subset
         # Uncertain Classes
         # # classes_1 = [392, 708, 729, 854]
@@ -233,7 +233,8 @@ if __name__ == '__main__':
         #     [synset2idx[k] for k in subsets[100]]+[synset2idx[k] for k in subsets[1300]]
         # classes2sample = [991] * 50
         # classes2sample = [25, 447, 991, 992]
-        classes2sample = [854] * 50
+        # classes2sample = [854] * 50
+        classes2sample = [22] * 100
     
     elif args.dataset=='masked_classes':
         synsets = [item for ls in subsets.values() for item in ls]
